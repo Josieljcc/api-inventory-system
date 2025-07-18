@@ -1,0 +1,303 @@
+basePath: /
+definitions:
+  products.Product:
+    properties:
+      barcode:
+        type: string
+      id:
+        type: integer
+      min_stock:
+        type: integer
+      name:
+        type: string
+      quantity:
+        type: integer
+    required:
+    - barcode
+    - name
+    type: object
+  products.StockRequest:
+    properties:
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - quantity
+    type: object
+  users.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  users.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API para gerenciamento de estoque e produtos.
+  title: Inventory System API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - sistema
+  /login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Credenciais do usuário
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/users.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Autentica um usuário
+      tags:
+      - usuarios
+  /products:
+    get:
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Items per page (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by name (partial match)
+        in: query
+        name: name
+        type: string
+      - description: Filter by barcode (exact match)
+        in: query
+        name: barcode
+        type: string
+      - description: Filter by minimum stock
+        in: query
+        name: min_stock
+        type: integer
+      - description: Sort field (id, name, quantity, min_stock)
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc, desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Total-Count:
+              description: Total number of products
+              type: int
+          schema:
+            items:
+              $ref: '#/definitions/products.Product'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Lista todos os produtos
+      tags:
+      - produtos
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Produto
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/products.Product'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      security:
+      - ApiKeyAuth: []
+      summary: Cria um novo produto
+      tags:
+      - produtos
+  /products/{barcode}:
+    get:
+      parameters:
+      - description: Código de barras
+        in: path
+        name: barcode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/products.Product'
+        "404":
+          description: Not Found
+      security:
+      - ApiKeyAuth: []
+      summary: Busca produto por código de barras
+      tags:
+      - produtos
+  /products/{barcode}/entry:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Código de barras
+        in: path
+        name: barcode
+        required: true
+        type: string
+      - description: Quantidade
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/products.StockRequest'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Entrada de estoque
+      tags:
+      - estoque
+  /products/{barcode}/exit:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Código de barras
+        in: path
+        name: barcode
+        required: true
+        type: string
+      - description: Quantidade
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/products.StockRequest'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      security:
+      - ApiKeyAuth: []
+      summary: Saída de estoque
+      tags:
+      - estoque
+  /products/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+      security:
+      - ApiKeyAuth: []
+      summary: Remove um produto
+      tags:
+      - produtos
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Produto
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/products.Product'
+      responses:
+        "200":
+          description: OK
+      security:
+      - ApiKeyAuth: []
+      summary: Atualiza um produto
+      tags:
+      - produtos
+  /register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do usuário
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/users.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Registra um novo usuário
+      tags:
+      - usuarios
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

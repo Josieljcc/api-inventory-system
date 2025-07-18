@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: inventory
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  api:
+    build:
+      context: .
+      target: prod
+    depends_on:
+      - db
+    environment:
+      - DB_URL=postgres://user:password@db:5432/inventory?sslmode=disable
+    ports:
+      - "8080:8080"
+  api-dev:
+    build:
+      context: .
+      target: dev
+    depends_on:
+      - db
+    environment:
+      - DB_URL=postgres://user:password@db:5432/inventory?sslmode=disable
+    command: ["sleep", "infinity"]
+volumes:
+  pgdata: 
