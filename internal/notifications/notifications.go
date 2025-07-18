@@ -1,6 +1,12 @@
 package notifications
 
-import "log"
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+)
 
 type NotificationEvent struct {
 	Type    string                 // e.g. "low_stock", "user_registered"
@@ -69,7 +75,24 @@ type WhatsAppSender struct {
 }
 
 func (w *WhatsAppSender) Send(event NotificationEvent) error {
-	// TODO: Implement WhatsApp API integration
-	log.Printf("[WHATSAPP] Would send to %s: %s", event.To, event.Message)
+	url := fmt.Sprintf("https://graph.facebook.com/v18.0/%s/messages", w.PhoneID)
+	payload := map[string]interface{}{
+		"messaging_product": "whatsapp",
+		"to":                event.To, // deve ser o número com DDI
+		"type":              "text",
+		"text":              map[string]string{"body": event.Message},
+	}
+	body, _ := json.Marshal(payload)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req.Header.Set("Authorization", "Bearer "+w.APIToken)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		return fmt.Errorf("WhatsApp API error: %s", resp.Status)
+	}
 	return nil
 }

@@ -8,6 +8,7 @@ import (
 	"inventory-system/internal"
 	"inventory-system/internal/notifications"
 	"inventory-system/internal/users"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -28,7 +29,12 @@ func respondError(w http.ResponseWriter, status int, message string) {
 
 func RegisterRoutes(r chi.Router, db *pgxpool.Pool) {
 	repo := NewRepository(db)
-	notifier := notifications.NewNotificationService(&notifications.LogSender{})
+	waToken := os.Getenv("WHATSAPP_TOKEN")
+	waPhoneID := os.Getenv("WHATSAPP_PHONE_ID")
+	notifier := notifications.NewNotificationService(
+		&notifications.LogSender{},
+		&notifications.WhatsAppSender{APIToken: waToken, PhoneID: waPhoneID},
+	)
 	service := NewService(repo, notifier)
 
 	r.Route("/products", func(r chi.Router) {

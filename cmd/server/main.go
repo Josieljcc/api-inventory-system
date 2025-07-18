@@ -20,6 +20,7 @@ import (
 	"inventory-system/internal/users"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -35,6 +36,10 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file found or error loading .env")
+	}
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		log.Fatal("DB_URL não definida")

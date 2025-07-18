@@ -17,6 +17,17 @@ The API will be available at http://localhost:8080
 - `DB_URL`: Database connection string (default: `postgres://user:password@db:5432/inventory?sslmode=disable`)
 - `JWT_SECRET`: Secret for signing JWT tokens (default: `changeme`)
 
+The following environment variables are required for WhatsApp integration:
+
+- `WHATSAPP_TOKEN`: Your WhatsApp Cloud API access token
+- `WHATSAPP_PHONE_ID`: Your WhatsApp phone number ID
+
+Example .env file (do not commit this file):
+```
+WHATSAPP_TOKEN=your_whatsapp_token_here
+WHATSAPP_PHONE_ID=your_phone_number_id_here
+```
+
 ### Manual Build
 ```sh
 go build -o inventory-system ./cmd/server

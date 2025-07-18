@@ -57,7 +57,7 @@ func (s *Service) StockExit(ctx context.Context, barcode string, qty int) error 
 	if p != nil && p.Quantity < p.MinStock && s.Notifier != nil {
 		s.Notifier.Notify(notifications.NotificationEvent{
 			Type:    "low_stock",
-			To:      "",
+			To:      "5586998277053",
 			Message: "Product '" + p.Name + "' is below minimum stock!",
 			Data:    map[string]interface{}{"barcode": p.Barcode, "quantity": p.Quantity, "min_stock": p.MinStock},
 		})

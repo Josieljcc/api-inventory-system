@@ -17,6 +17,9 @@ services:
       - db
     environment:
       - DB_URL=postgres://user:password@db:5432/inventory?sslmode=disable
+      - JWT_SECRET=changeme
+      - WHATSAPP_TOKEN=${WHATSAPP_TOKEN}
+      - WHATSAPP_PHONE_ID=${WHATSAPP_PHONE_ID}
     ports:
       - "8080:8080"
   api-dev:
