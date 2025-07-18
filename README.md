@@ -69,3 +69,21 @@ go test ./...
 ---
 
 For more details, see the Swagger documentation or the codebase. 
+
+## Notifications Architecture
+
+The notification system is based on events and adapters:
+- Define your event as a `NotificationEvent`.
+- Implement the `NotificationSender` interface for each channel (e.g., Telegram, Email, WhatsApp).
+- Register your senders in the `NotificationService`.
+- To add a new channel, simply implement the interface and add it to the service:
+
+```go
+notifier := notifications.NewNotificationService(
+    &notifications.TelegramSender{BotToken: "...", ChatID: "..."},
+    &notifications.EmailSender{SMTPServer: "...", ...},
+    &notifications.WhatsAppSender{APIToken: "...", PhoneID: "..."},
+)
+```
+
+Your business logic only needs to call `notifier.Notify(event)`. 

@@ -2,14 +2,16 @@ package products
 
 import (
 	"context"
+	"inventory-system/internal/notifications"
 )
 
 type Service struct {
-	Repo RepositoryInterface
+	Repo     RepositoryInterface
+	Notifier *notifications.NotificationService
 }
 
-func NewService(repo RepositoryInterface) *Service {
-	return &Service{Repo: repo}
+func NewService(repo RepositoryInterface, notifier *notifications.NotificationService) *Service {
+	return &Service{Repo: repo, Notifier: notifier}
 }
 
 func (s *Service) CreateProduct(ctx context.Context, p *Product) error {
@@ -47,5 +49,18 @@ func (s *Service) StockEntry(ctx context.Context, barcode string, qty int) error
 }
 
 func (s *Service) StockExit(ctx context.Context, barcode string, qty int) error {
-	return s.Repo.StockExit(ctx, barcode, qty)
+	err := s.Repo.StockExit(ctx, barcode, qty)
+	if err != nil {
+		return err
+	}
+	p, _ := s.Repo.GetProductByBarcode(ctx, barcode)
+	if p != nil && p.Quantity < p.MinStock && s.Notifier != nil {
+		s.Notifier.Notify(notifications.NotificationEvent{
+			Type:    "low_stock",
+			To:      "",
+			Message: "Product '" + p.Name + "' is below minimum stock!",
+			Data:    map[string]interface{}{"barcode": p.Barcode, "quantity": p.Quantity, "min_stock": p.MinStock},
+		})
+	}
+	return nil
 }

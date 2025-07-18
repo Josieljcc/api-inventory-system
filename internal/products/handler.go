@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"inventory-system/internal"
+	"inventory-system/internal/notifications"
 	"inventory-system/internal/users"
 
 	"github.com/go-chi/chi/v5"
@@ -27,7 +28,8 @@ func respondError(w http.ResponseWriter, status int, message string) {
 
 func RegisterRoutes(r chi.Router, db *pgxpool.Pool) {
 	repo := NewRepository(db)
-	service := NewService(repo)
+	notifier := notifications.NewNotificationService(&notifications.LogSender{})
+	service := NewService(repo, notifier)
 
 	r.Route("/products", func(r chi.Router) {
 		r.Use(internal.AuthMiddleware)

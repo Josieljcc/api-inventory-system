@@ -57,7 +57,7 @@ func cleanTable(t *testing.T) {
 func TestCreateAndGetProduct(t *testing.T) {
 	cleanTable(t)
 	repo := NewRepository(testDB)
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 	p := &Product{Name: "Produto Teste", Barcode: "123456", Quantity: 10, MinStock: 2}
 	err := svc.CreateProduct(context.Background(), p)
 	if err != nil {
@@ -78,7 +78,7 @@ func TestCreateAndGetProduct(t *testing.T) {
 func TestGetAllProducts(t *testing.T) {
 	cleanTable(t)
 	repo := NewRepository(testDB)
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 	_ = svc.CreateProduct(context.Background(), &Product{Name: "P1", Barcode: "b1", Quantity: 1, MinStock: 1})
 	_ = svc.CreateProduct(context.Background(), &Product{Name: "P2", Barcode: "b2", Quantity: 2, MinStock: 1})
 	prods, _, err := svc.GetProducts(context.Background(), ProductsQuery{})
@@ -93,7 +93,7 @@ func TestGetAllProducts(t *testing.T) {
 func TestUpdateProduct(t *testing.T) {
 	cleanTable(t)
 	repo := NewRepository(testDB)
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 	p := &Product{Name: "P", Barcode: "b", Quantity: 1, MinStock: 1}
 	_ = svc.CreateProduct(context.Background(), p)
 	p.Name = "Novo Nome"
@@ -111,7 +111,7 @@ func TestUpdateProduct(t *testing.T) {
 func TestDeleteProduct(t *testing.T) {
 	cleanTable(t)
 	repo := NewRepository(testDB)
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 	p := &Product{Name: "P", Barcode: "b", Quantity: 1, MinStock: 1}
 	_ = svc.CreateProduct(context.Background(), p)
 	err := svc.DeleteProduct(context.Background(), p.ID)
@@ -127,7 +127,7 @@ func TestDeleteProduct(t *testing.T) {
 func TestStockEntryAndExit(t *testing.T) {
 	cleanTable(t)
 	repo := NewRepository(testDB)
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 	p := &Product{Name: "P", Barcode: "b", Quantity: 10, MinStock: 1}
 	_ = svc.CreateProduct(context.Background(), p)
 	err := svc.StockEntry(context.Background(), "b", 5)
@@ -257,7 +257,7 @@ func TestHealthEndpoint(t *testing.T) {
 func TestGetProductsWithPaginationAndFilters(t *testing.T) {
 	cleanTable(t)
 	repo := NewRepository(testDB)
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 	// Criar produtos de teste
 	_ = svc.CreateProduct(context.Background(), &Product{Name: "Apple", Barcode: "123", Quantity: 10, MinStock: 5})
 	_ = svc.CreateProduct(context.Background(), &Product{Name: "Banana", Barcode: "456", Quantity: 5, MinStock: 2})
@@ -495,7 +495,7 @@ func TestValidationErrorCases(t *testing.T) {
 func TestDatabaseErrorCases(t *testing.T) {
 	cleanTable(t)
 	repo := NewRepository(testDB)
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 
 	// Teste busca produto inexistente
 	product, err := svc.GetProductByBarcode(context.Background(), "inexistent")
@@ -532,7 +532,7 @@ func TestDatabaseErrorCases(t *testing.T) {
 func TestPaginationEdgeCases(t *testing.T) {
 	cleanTable(t)
 	repo := NewRepository(testDB)
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 
 	// Criar produtos para teste
 	for i := 1; i <= 25; i++ {
@@ -578,7 +578,7 @@ func TestPaginationEdgeCases(t *testing.T) {
 func TestFilterEdgeCases(t *testing.T) {
 	cleanTable(t)
 	repo := NewRepository(testDB)
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 
 	// Criar produtos para teste
 	_ = svc.CreateProduct(context.Background(), &Product{Name: "Apple", Barcode: "123", Quantity: 10, MinStock: 5})
@@ -698,7 +698,7 @@ func (m *mockProductRepo) StockExit(ctx context.Context, barcode string, qty int
 
 func TestService_CreateProduct_Mock(t *testing.T) {
 	repo := &mockProductRepo{products: make(map[string]*Product)}
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 	p := &Product{Name: "Produto Teste", Barcode: "123", Quantity: 10, MinStock: 2}
 	err := svc.CreateProduct(context.Background(), p)
 	if err != nil {
@@ -716,7 +716,7 @@ func TestService_CreateProduct_Mock(t *testing.T) {
 
 func TestService_GetProductByBarcode_Mock(t *testing.T) {
 	repo := &mockProductRepo{products: make(map[string]*Product)}
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 	p := &Product{Name: "Produto Teste", Barcode: "123", Quantity: 10, MinStock: 2}
 	_ = svc.CreateProduct(context.Background(), p)
 	prod, err := svc.GetProductByBarcode(context.Background(), "123")
@@ -738,7 +738,7 @@ func TestService_GetProductByBarcode_Mock(t *testing.T) {
 
 func TestService_StockEntryExit_Mock(t *testing.T) {
 	repo := &mockProductRepo{products: make(map[string]*Product)}
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 	p := &Product{Name: "Produto Teste", Barcode: "123", Quantity: 10, MinStock: 2}
 	_ = svc.CreateProduct(context.Background(), p)
 	err := svc.StockEntry(context.Background(), "123", 5)
@@ -764,7 +764,7 @@ func TestService_StockEntryExit_Mock(t *testing.T) {
 
 func TestService_Failures_Mock(t *testing.T) {
 	repo := &mockProductRepo{products: make(map[string]*Product), fail: true}
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 	p := &Product{Name: "Produto Teste", Barcode: "123", Quantity: 10, MinStock: 2}
 	if err := svc.CreateProduct(context.Background(), p); err == nil {
 		t.Error("esperado erro de banco")
